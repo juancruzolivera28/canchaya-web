@@ -46,40 +46,46 @@ useEffect(() => {
   return (
     <div className="max-w-sm mx-auto min-h-screen bg-gray-100">
       <div style={{ backgroundColor: '#085041' }} className="px-4 pt-12 pb-4">
-        <div className="flex justify-between items-start">
-  <div>
-    <h1 className="text-white text-2xl font-bold">CanchaYa</h1>
-    <p style={{ color: '#9FE1CB' }} className="text-sm">Posadas, Misiones</p>
+  <div className="flex justify-between items-start">
+    <div>
+      <h1 className="text-white text-2xl font-bold">CanchaYa</h1>
+      <p style={{ color: '#9FE1CB' }} className="text-sm">Posadas, Misiones</p>
+    </div>
+    <div className="flex items-center gap-2">
+      {usuario && (
+        <button
+          onClick={() => router.push('/panel')}
+          className="text-white text-xs font-bold px-3 py-1.5 rounded-xl"
+          style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+        >
+          Mi panel
+        </button>
+      )}
+      {usuario ? (
+        <button
+          onClick={async () => { await supabase.auth.signOut(); }}
+          className="text-white text-xs font-bold px-3 py-1.5 rounded-xl"
+          style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+        >
+          Salir
+        </button>
+      ) : (
+        <button
+          onClick={() => router.push('/login')}
+          className="text-white text-sm font-bold px-4 py-2 rounded-xl"
+          style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+        >
+          Ingresar
+        </button>
+      )}
+    </div>
   </div>
-  {usuario ? (
-  <div className="flex items-center gap-2">
-    <span className="text-white text-xs opacity-80">
-      {usuario.user_metadata?.nombre || usuario.email?.split('@')[0]}
-    </span>
-    <button
-      onClick={async () => { await supabase.auth.signOut(); }}
-      className="text-white text-xs font-bold px-3 py-1.5 rounded-xl"
-      style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-    >
-      Salir
-    </button>
-  </div>
-) : (
-  <button
-    onClick={() => router.push('/login')}
-    className="text-white text-sm font-bold px-4 py-2 rounded-xl"
-    style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-  >
-    Ingresar
-  </button>
-)}
+  <input
+    className="w-full mt-3 px-4 py-3 rounded-xl text-sm text-white placeholder-white/60 outline-none"
+    style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
+    placeholder="Buscar cancha, barrio, zona..."
+  />
 </div>
-        <input
-          className="w-full mt-3 px-4 py-3 rounded-xl text-sm text-white placeholder-white/60 outline-none"
-          style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
-          placeholder="Buscar cancha, barrio, zona..."
-        />
-      </div>
 
       <div className="mx-4 mt-4 p-4 rounded-xl flex items-center justify-between" style={{ backgroundColor: '#E1F5EE' }}>
         <div>
@@ -184,9 +190,46 @@ const HORARIOS = [
 function DetalleCancha({ cancha, onVolver }: { cancha: any; onVolver: () => void }) {
   const [diaActivo, setDiaActivo] = useState('2');
   const [horarioSel, setHorarioSel] = useState('9');
+  const [guardando, setGuardando] = useState(false);
+  const [reservaExitosa, setReservaExitosa] = useState(false);
 
   const diaObj = DIAS.find(d => d.id === diaActivo);
   const horarioObj = HORARIOS.find(h => h.id === horarioSel);
+
+  async function hacerReserva(pagar: boolean) {
+    setGuardando(true);
+    const { data: sesion } = await supabase.auth.getSession();
+    const nombreJugador = sesion?.session?.user?.user_metadata?.nombre ||
+                          sesion?.session?.user?.email ||
+                          'Jugador';
+    const { error } = await supabase.from('reservas').insert({
+      cancha_id: cancha.id,
+      nombre_jugador: nombreJugador,
+      pagado: pagar,
+      horario_id: null,
+    });
+    if (!error) setReservaExitosa(true);
+    setGuardando(false);
+  }
+
+  if (reservaExitosa) {
+    return (
+      <div className="max-w-sm mx-auto min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
+        <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-6" style={{ backgroundColor: '#E1F5EE' }}>
+          ✅
+        </div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">¡Reserva confirmada!</h1>
+        <p className="text-gray-500 mb-8">Tu turno en {cancha.nombre} quedó reservado.</p>
+        <button
+          onClick={onVolver}
+          className="w-full py-4 rounded-xl font-bold text-white"
+          style={{ backgroundColor: '#085041' }}
+        >
+          Volver al inicio
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-sm mx-auto min-h-screen bg-white">
@@ -284,11 +327,20 @@ function DetalleCancha({ cancha, onVolver }: { cancha: any; onVolver: () => void
         </div>
 
         <div className="flex gap-2 pb-8">
-          <button className="flex-1 py-3.5 rounded-xl border border-gray-300 font-bold text-gray-800 text-sm">
-            Sin pagar
+          <button
+            onClick={() => hacerReserva(false)}
+            disabled={guardando}
+            className="flex-1 py-3.5 rounded-xl border border-gray-300 font-bold text-gray-800 text-sm"
+          >
+            {guardando ? 'Guardando...' : 'Sin pagar'}
           </button>
-          <button className="flex-1 py-3.5 rounded-xl font-bold text-white text-sm" style={{ backgroundColor: '#085041', flexGrow: 2 }}>
-            Pagar ahora
+          <button
+            onClick={() => hacerReserva(true)}
+            disabled={guardando}
+            className="flex-1 py-3.5 rounded-xl font-bold text-white text-sm"
+            style={{ backgroundColor: '#085041', flexGrow: 2 }}
+          >
+            {guardando ? 'Guardando...' : 'Pagar ahora'}
           </button>
         </div>
       </div>
