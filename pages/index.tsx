@@ -1,7 +1,22 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { useRouter } from 'next/router';
 
-export default function Home() {
+export default function Home( ) {
+  const router = useRouter();
+  const [usuario, setUsuario] = useState<any>(null);
+
+useEffect(() => {
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    setUsuario(session?.user ?? null);
+  });
+
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUsuario(session?.user ?? null);
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
   const [zonaActiva, setZonaActiva] = useState('Todas');
   const [canchas, setCanchas] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -31,8 +46,34 @@ export default function Home() {
   return (
     <div className="max-w-sm mx-auto min-h-screen bg-gray-100">
       <div style={{ backgroundColor: '#085041' }} className="px-4 pt-12 pb-4">
-        <h1 className="text-white text-2xl font-bold">CanchaYa</h1>
-        <p style={{ color: '#9FE1CB' }} className="text-sm">Posadas, Misiones</p>
+        <div className="flex justify-between items-start">
+  <div>
+    <h1 className="text-white text-2xl font-bold">CanchaYa</h1>
+    <p style={{ color: '#9FE1CB' }} className="text-sm">Posadas, Misiones</p>
+  </div>
+  {usuario ? (
+  <div className="flex items-center gap-2">
+    <span className="text-white text-xs opacity-80">
+      {usuario.user_metadata?.nombre || usuario.email?.split('@')[0]}
+    </span>
+    <button
+      onClick={async () => { await supabase.auth.signOut(); }}
+      className="text-white text-xs font-bold px-3 py-1.5 rounded-xl"
+      style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+    >
+      Salir
+    </button>
+  </div>
+) : (
+  <button
+    onClick={() => router.push('/login')}
+    className="text-white text-sm font-bold px-4 py-2 rounded-xl"
+    style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+  >
+    Ingresar
+  </button>
+)}
+</div>
         <input
           className="w-full mt-3 px-4 py-3 rounded-xl text-sm text-white placeholder-white/60 outline-none"
           style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
