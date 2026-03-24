@@ -1,28 +1,28 @@
-import { useState } from 'react';
-
-const ZONAS = [
-  { id: '1', nombre: 'Todas', canchas: 18 },
-  { id: '2', nombre: 'Centro', canchas: 6 },
-  { id: '3', nombre: 'Villa Cabello', canchas: 4 },
-  { id: '4', nombre: 'Itaembé Miní', canchas: 3 },
-  { id: '5', nombre: 'Miguel Lanús', canchas: 3 },
-  { id: '6', nombre: 'Yaboty', canchas: 2 },
-];
-
-const CANCHAS = [
-  { id: '1', nombre: 'Complejo El Potrillo', zona: 'Centro', rating: 4.8, label: 'Excelente', precio: 8500, tipo: 'Fútbol 5', techada: true },
-  { id: '2', nombre: 'Canchas La Ribera', zona: 'Centro', rating: 4.5, label: 'Muy buena', precio: 7000, tipo: 'Fútbol 7', techada: false },
-  { id: '3', nombre: 'Complejo Norte FC', zona: 'Villa Cabello', rating: 4.2, label: 'Buena', precio: 6000, tipo: 'Fútbol 5', techada: false },
-  { id: '4', nombre: 'Sportiva Itaembé', zona: 'Itaembé Miní', rating: 4.9, label: 'Excelente', precio: 9000, tipo: 'Fútbol 5', techada: true },
-];
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 export default function Home() {
-  const [zonaActiva, setZonaActiva] = useState('1');
+  const [zonaActiva, setZonaActiva] = useState('Todas');
+  const [canchas, setCanchas] = useState<any[]>([]);
+  const [cargando, setCargando] = useState(true);
   const [canchaSeleccionada, setCanchaSeleccionada] = useState<any>(null);
 
-  const canchasFiltradas = zonaActiva === '1'
-    ? CANCHAS
-    : CANCHAS.filter(c => c.zona === ZONAS.find(z => z.id === zonaActiva)?.nombre);
+  useEffect(() => {
+    cargarCanchas();
+  }, []);
+
+  async function cargarCanchas() {
+    setCargando(true);
+    const { data, error } = await supabase.from('canchas').select('*');
+    if (data) setCanchas(data);
+    setCargando(false);
+  }
+
+  const zonas = ['Todas', ...Array.from(new Set(canchas.map(c => c.zona)))];
+
+  const canchasFiltradas = zonaActiva === 'Todas'
+    ? canchas
+    : canchas.filter(c => c.zona === zonaActiva);
 
   if (canchaSeleccionada) {
     return <DetalleCancha cancha={canchaSeleccionada} onVolver={() => setCanchaSeleccionada(null)} />;
@@ -30,7 +30,6 @@ export default function Home() {
 
   return (
     <div className="max-w-sm mx-auto min-h-screen bg-gray-100">
-      {/* Header */}
       <div style={{ backgroundColor: '#085041' }} className="px-4 pt-12 pb-4">
         <h1 className="text-white text-2xl font-bold">CanchaYa</h1>
         <p style={{ color: '#9FE1CB' }} className="text-sm">Posadas, Misiones</p>
@@ -41,7 +40,6 @@ export default function Home() {
         />
       </div>
 
-      {/* Banner */}
       <div className="mx-4 mt-4 p-4 rounded-xl flex items-center justify-between" style={{ backgroundColor: '#E1F5EE' }}>
         <div>
           <p className="font-bold text-sm" style={{ color: '#085041' }}>Reserva este fin de semana</p>
@@ -52,63 +50,64 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Zonas */}
       <div className="px-4 mt-4">
         <h2 className="font-bold text-gray-800 mb-3">Zonas de Posadas</h2>
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {ZONAS.map(zona => (
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {zonas.map(zona => (
             <button
-              key={zona.id}
-              onClick={() => setZonaActiva(zona.id)}
-              className="flex-shrink-0 px-4 py-2 rounded-xl border text-sm flex flex-col items-center"
+              key={zona}
+              onClick={() => setZonaActiva(zona)}
+              className="flex-shrink-0 px-4 py-2 rounded-xl border text-sm font-bold"
               style={{
-                backgroundColor: zonaActiva === zona.id ? '#085041' : 'white',
-                borderColor: zonaActiva === zona.id ? '#085041' : '#E0E0E0',
-                color: zonaActiva === zona.id ? 'white' : '#1A1A1A',
+                backgroundColor: zonaActiva === zona ? '#085041' : 'white',
+                borderColor: zonaActiva === zona ? '#085041' : '#E0E0E0',
+                color: zonaActiva === zona ? 'white' : '#1A1A1A',
               }}
             >
-              <span className="font-bold">{zona.nombre}</span>
-              <span className="text-xs opacity-70">{zona.canchas} canchas</span>
+              {zona}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Canchas */}
       <div className="px-4 mt-4 pb-8">
         <h2 className="font-bold text-gray-800 mb-3">Canchas disponibles hoy</h2>
-        {canchasFiltradas.map(cancha => (
-          <div
-            key={cancha.id}
-            onClick={() => setCanchaSeleccionada(cancha)}
-            className="bg-white rounded-xl border border-gray-200 mb-3 overflow-hidden cursor-pointer active:opacity-80"
-          >
-            <div className="h-32 flex items-center justify-center text-6xl" style={{ backgroundColor: '#D9F0E6' }}>
-              ⚽
-            </div>
-            <div className="p-3">
-              <p className="font-bold text-gray-800">{cancha.nombre}</p>
-              <p className="text-xs text-gray-500 mt-0.5 mb-2">{cancha.zona} · Posadas</p>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-white text-xs font-bold px-2 py-0.5 rounded" style={{ backgroundColor: '#1D9E75' }}>
-                  {cancha.rating}
-                </span>
-                <span className="text-xs text-gray-500">{cancha.label}</span>
+        {cargando ? (
+          <div className="text-center py-12 text-gray-400">Cargando canchas...</div>
+        ) : (
+          canchasFiltradas.map(cancha => (
+            <div
+              key={cancha.id}
+              onClick={() => setCanchaSeleccionada(cancha)}
+              className="bg-white rounded-xl border border-gray-200 mb-3 overflow-hidden cursor-pointer active:opacity-80"
+            >
+              <div className="h-32 flex items-center justify-center text-6xl" style={{ backgroundColor: '#D9F0E6' }}>
+                ⚽
               </div>
-              <div className="flex gap-2 mb-2">
-                <span className="text-xs font-bold px-2 py-1 rounded" style={{ backgroundColor: '#E1F5EE', color: '#085041' }}>
-                  {cancha.tipo}
-                </span>
-                {cancha.techada && (
-                  <span className="text-xs font-bold px-2 py-1 rounded" style={{ backgroundColor: '#E1F5EE', color: '#085041' }}>
-                    Techada
+              <div className="p-3">
+                <p className="font-bold text-gray-800">{cancha.nombre}</p>
+                <p className="text-xs text-gray-500 mt-0.5 mb-2">{cancha.zona} · Posadas</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-white text-xs font-bold px-2 py-0.5 rounded" style={{ backgroundColor: '#1D9E75' }}>
+                    {cancha.rating}
                   </span>
-                )}
+                  <span className="text-xs text-gray-500">{cancha.rating >= 4.8 ? 'Excelente' : cancha.rating >= 4.5 ? 'Muy buena' : 'Buena'}</span>
+                </div>
+                <div className="flex gap-2 mb-2">
+                  <span className="text-xs font-bold px-2 py-1 rounded" style={{ backgroundColor: '#E1F5EE', color: '#085041' }}>
+                    {cancha.tipo}
+                  </span>
+                  {cancha.techada && (
+                    <span className="text-xs font-bold px-2 py-1 rounded" style={{ backgroundColor: '#E1F5EE', color: '#085041' }}>
+                      Techada
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500">desde <span className="text-base font-bold text-gray-800">${cancha.precio_por_hora.toLocaleString()}</span></p>
               </div>
-              <p className="text-xs text-gray-500">desde <span className="text-base font-bold text-gray-800">${cancha.precio.toLocaleString()}</span></p>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
@@ -162,24 +161,24 @@ function DetalleCancha({ cancha, onVolver }: { cancha: any; onVolver: () => void
 
       <div className="p-4">
         <h1 className="text-2xl font-bold text-gray-800">{cancha.nombre}</h1>
-        <p className="text-sm text-gray-500 mt-1">📍 {cancha.zona} · Posadas</p>
+        <p className="text-sm text-gray-500 mt-1">📍 {cancha.direccion} · {cancha.zona}</p>
 
         <div className="flex items-center gap-3 mt-4 pb-4 border-b border-gray-200">
           <span className="text-white font-bold text-lg px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#1D9E75' }}>
             {cancha.rating}
           </span>
           <div className="flex-1">
-            <p className="font-bold text-gray-800">{cancha.label}</p>
+            <p className="font-bold text-gray-800">{cancha.rating >= 4.8 ? 'Excelente' : 'Muy buena'}</p>
             <p className="text-xs text-gray-500">142 calificaciones</p>
           </div>
           <div className="text-right">
             <p className="text-xs text-gray-500">1 hora desde</p>
-            <p className="text-xl font-bold text-gray-800">${cancha.precio.toLocaleString()}</p>
+            <p className="text-xl font-bold text-gray-800">${cancha.precio_por_hora.toLocaleString()}</p>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2 mt-4 pb-4 border-b border-gray-200">
-          {['⚽ Fútbol 5', '🏠 Techada', '💡 Iluminada', '🚿 Vestuario'].map(a => (
+          {[`⚽ ${cancha.tipo}`, cancha.techada ? '🏠 Techada' : null, cancha.iluminada ? '💡 Iluminada' : null, '🚿 Vestuario'].filter(Boolean).map(a => (
             <span key={a} className="text-xs text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg">{a}</span>
           ))}
         </div>
@@ -234,12 +233,12 @@ function DetalleCancha({ cancha, onVolver }: { cancha: any; onVolver: () => void
           </div>
           <div className="flex justify-between mb-2">
             <span className="text-sm text-gray-500">1 hora · {cancha.tipo}</span>
-            <span className="text-sm text-gray-800">${cancha.precio.toLocaleString()}</span>
+            <span className="text-sm text-gray-800">${cancha.precio_por_hora.toLocaleString()}</span>
           </div>
           <div className="border-t border-gray-300 my-2" />
           <div className="flex justify-between">
             <span className="font-bold text-gray-800">Total</span>
-            <span className="text-xl font-bold text-gray-800">${cancha.precio.toLocaleString()}</span>
+            <span className="text-xl font-bold text-gray-800">${cancha.precio_por_hora.toLocaleString()}</span>
           </div>
         </div>
 
@@ -247,7 +246,7 @@ function DetalleCancha({ cancha, onVolver }: { cancha: any; onVolver: () => void
           <button className="flex-1 py-3.5 rounded-xl border border-gray-300 font-bold text-gray-800 text-sm">
             Sin pagar
           </button>
-          <button className="flex-2 flex-1 py-3.5 rounded-xl font-bold text-white text-sm" style={{ backgroundColor: '#085041', flexGrow: 2 }}>
+          <button className="flex-1 py-3.5 rounded-xl font-bold text-white text-sm" style={{ backgroundColor: '#085041', flexGrow: 2 }}>
             Pagar ahora
           </button>
         </div>
