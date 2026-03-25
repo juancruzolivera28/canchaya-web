@@ -44,8 +44,8 @@ useEffect(() => {
   }
 
   return (
-    <div className="max-w-sm mx-auto min-h-screen bg-gray-100" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      <div style={{ backgroundColor: '#0a6b52' }} className="px-4 pt-safe pb-4">
+    <div className="max-w-sm mx-auto min-h-screen bg-gray-100">
+      <div style={{ backgroundColor: '#0a6b52', paddingTop: 'calc(env(safe-area-inset-top) + 48px)' }} className="px-4 pb-4">
   <div className="flex justify-between items-start">
     <div>
       <h1 className="text-white text-2xl font-bold">CanchaYa</h1>
