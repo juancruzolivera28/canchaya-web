@@ -35,7 +35,7 @@ export default function Login() {
 
   return (
     <div className="max-w-sm mx-auto min-h-screen bg-white flex flex-col">
-      <div style={{ backgroundColor: '#085041' }} className="px-6 pt-16 pb-10 text-center">
+      <div style={{ backgroundColor: '#0a6b52' }} className="px-6 pt-16 pb-10 text-center">
         <h1 className="text-white text-3xl font-bold">CanchaYa</h1>
         <p style={{ color: '#9FE1CB' }} className="text-sm mt-1">Reservá tu cancha en segundos</p>
       </div>
@@ -47,7 +47,7 @@ export default function Login() {
             className="flex-1 py-2.5 rounded-lg text-sm font-bold transition-all"
             style={{
               backgroundColor: modo === 'login' ? 'white' : 'transparent',
-              color: modo === 'login' ? '#085041' : '#666',
+              color: modo === 'login' ? '#0a6b52' : '#666',
             }}
           >
             Ingresar
@@ -57,7 +57,7 @@ export default function Login() {
             className="flex-1 py-2.5 rounded-lg text-sm font-bold transition-all"
             style={{
               backgroundColor: modo === 'registro' ? 'white' : 'transparent',
-              color: modo === 'registro' ? '#085041' : '#666',
+              color: modo === 'registro' ? '#0a6b52' : '#666',
             }}
           >
             Registrarse
@@ -114,7 +114,7 @@ export default function Login() {
           onClick={handleSubmit}
           disabled={cargando}
           className="w-full py-4 rounded-xl font-bold text-white text-sm"
-          style={{ backgroundColor: cargando ? '#9FE1CB' : '#085041' }}
+          style={{ backgroundColor: cargando ? '#9FE1CB' : '#0a6b52' }}
         >
           {cargando ? 'Cargando...' : modo === 'login' ? 'Ingresar' : 'Crear cuenta'}
         </button>
@@ -122,7 +122,7 @@ export default function Login() {
         <button
           onClick={() => router.push('/')}
           className="w-full py-4 text-sm font-bold mt-3"
-          style={{ color: '#085041' }}
+          style={{ color: '#0a6b52' }}
         >
           Continuar sin cuenta →
         </button>
