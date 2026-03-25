@@ -11,33 +11,35 @@ const DIAS = [
   { id: '6', nombre: 'Jue', numero: '27' },
 ];
 
-const RESERVAS_DEMO = [
-  { id: '1', hora: '08:00', nombre: 'Martín García', pagado: true, tipo: 'reserva' },
-  { id: '2', hora: '10:00', nombre: 'Equipo Los Pumas', pagado: true, tipo: 'reserva' },
-  { id: '3', hora: '12:00', nombre: null, pagado: false, tipo: 'libre' },
-  { id: '4', hora: '14:00', nombre: 'Mantenimiento', pagado: false, tipo: 'bloqueado' },
-  { id: '5', hora: '16:00', nombre: 'Lucía Fernández', pagado: false, tipo: 'reserva' },
-  { id: '6', hora: '18:00', nombre: 'Club Atlético', pagado: true, tipo: 'reserva' },
-  { id: '7', hora: '20:00', nombre: null, pagado: false, tipo: 'libre' },
-];
-
 export default function Panel() {
   const router = useRouter();
   const [usuario, setUsuario] = useState<any>(null);
   const [cancha, setCancha] = useState<any>(null);
   const [diaActivo, setDiaActivo] = useState('2');
   const [cargando, setCargando] = useState(true);
+  const [reservas, setReservas] = useState<any[]>([]);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) { router.push('/login'); return; }
       setUsuario(session.user);
-      const { data } = await supabase
+
+      const { data: canchaData } = await supabase
         .from('canchas')
         .select('*')
         .eq('dueno_id', session.user.id)
         .single();
-      setCancha(data);
+      setCancha(canchaData);
+
+      if (canchaData) {
+        const { data: reservasData } = await supabase
+          .from('reservas')
+          .select('*')
+          .eq('cancha_id', canchaData.id)
+          .order('created_at', { ascending: false });
+        setReservas(reservasData || []);
+      }
+
       setCargando(false);
     });
   }, []);
@@ -48,8 +50,8 @@ export default function Panel() {
     </div>
   );
 
-  const reservasHoy = RESERVAS_DEMO.filter(r => r.tipo === 'reserva').length;
-  const ingresosHoy = RESERVAS_DEMO.filter(r => r.tipo === 'reserva' && r.pagado).length * (cancha?.precio_por_hora || 8500);
+  const reservasHoy = reservas.length;
+  const ingresosMes = reservas.filter(r => r.pagado).length * (cancha?.precio_por_hora || 8500);
 
   return (
     <div className="max-w-sm mx-auto min-h-screen bg-gray-100">
@@ -76,13 +78,13 @@ export default function Panel() {
           </div>
           <div className="rounded-xl p-3" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
             <p className="text-white/60 text-xs mb-1">Este mes</p>
-            <p className="text-white text-lg font-bold">$318k</p>
-            <p className="text-green-300 text-xs">↑ 12%</p>
+            <p className="text-white text-lg font-bold">${(ingresosMes / 1000).toFixed(0)}k</p>
+            <p className="text-green-300 text-xs">total</p>
           </div>
           <div className="rounded-xl p-3" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
-            <p className="text-white/60 text-xs mb-1">Ocupación</p>
-            <p className="text-white text-xl font-bold">78%</p>
-            <p className="text-white/50 text-xs">promedio</p>
+            <p className="text-white/60 text-xs mb-1">Pagadas</p>
+            <p className="text-white text-xl font-bold">{reservas.filter(r => r.pagado).length}</p>
+            <p className="text-white/50 text-xs">reservas</p>
           </div>
         </div>
       </div>
@@ -111,48 +113,32 @@ export default function Panel() {
         </div>
 
         <div className="flex flex-col gap-2 mb-4">
-          {RESERVAS_DEMO.map(r => (
+          {reservas.length === 0 ? (
+            <div className="bg-white rounded-xl p-6 text-center">
+              <p className="text-gray-400 text-sm">No hay reservas todavía</p>
+            </div>
+          ) : reservas.map(r => (
             <div
               key={r.id}
               className="bg-white rounded-xl p-3 flex items-center gap-3"
-              style={{
-  opacity: r.tipo === 'libre' ? 0.6 : 1,
-  border: r.tipo === 'libre' ? '1px dashed #E0E0E0' : 'none',
-  borderLeft: r.tipo !== 'libre' ? `4px solid ${r.tipo === 'reserva' ? '#1D9E75' : '#888'}` : undefined,
-}}
+              style={{ borderLeft: `4px solid ${r.pagado ? '#1D9E75' : '#EF9F27'}` }}
             >
-              <span className="text-sm font-bold text-gray-500 w-12">{r.hora}</span>
+              <span className="text-sm font-bold text-gray-500 w-12">
+                {new Date(r.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+              </span>
               <div className="flex-1">
-                {r.tipo === 'libre' ? (
-                  <p className="text-sm text-gray-400">Horario libre</p>
-                ) : (
-                  <>
-                    <p className="text-sm font-bold text-gray-800">{r.nombre}</p>
-                    <p className="text-xs text-gray-400">Fútbol 5 · 1 hora</p>
-                  </>
-                )}
+                <p className="text-sm font-bold text-gray-800">{r.nombre_jugador}</p>
+                <p className="text-xs text-gray-400">Fútbol 5 · 1 hora</p>
               </div>
-              {r.tipo === 'reserva' && (
-                <span
-                  className="text-xs font-bold px-2 py-1 rounded-lg"
-                  style={{
-                    backgroundColor: r.pagado ? '#E1F5EE' : '#FAEEDA',
-                    color: r.pagado ? '#085041' : '#633806',
-                  }}
-                >
-                  {r.pagado ? 'Pagado' : 'Pendiente'}
-                </span>
-              )}
-              {r.tipo === 'bloqueado' && (
-                <span className="text-xs font-bold px-2 py-1 rounded-lg bg-gray-100 text-gray-500">
-                  Bloqueado
-                </span>
-              )}
-              {r.tipo === 'libre' && (
-                <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ color: '#1D9E75' }}>
-                  + Agregar
-                </span>
-              )}
+              <span
+                className="text-xs font-bold px-2 py-1 rounded-lg"
+                style={{
+                  backgroundColor: r.pagado ? '#E1F5EE' : '#FAEEDA',
+                  color: r.pagado ? '#085041' : '#633806',
+                }}
+              >
+                {r.pagado ? 'Pagado' : 'Pendiente'}
+              </span>
             </div>
           ))}
         </div>
@@ -183,34 +169,24 @@ export default function Panel() {
         <div className="mb-8">
           <div className="flex justify-between items-center mb-3">
             <h2 className="font-bold text-gray-800">Ingresos del mes</h2>
-            <button className="text-xs font-bold" style={{ color: '#1D9E75' }}>Ver detalle →</button>
           </div>
           <div className="bg-white rounded-xl p-4">
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-xs text-gray-500 mb-1">Cobrado online</p>
-                <p className="text-lg font-bold text-gray-800">$214k</p>
-                <p className="text-xs" style={{ color: '#1D9E75' }}>↑ 18%</p>
+                <p className="text-lg font-bold text-gray-800">
+                  ${reservas.filter(r => r.pagado).length * (cancha?.precio_por_hora || 8500) > 0
+                    ? (reservas.filter(r => r.pagado).length * (cancha?.precio_por_hora || 8500)).toLocaleString()
+                    : '0'}
+                </p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-xs text-gray-500 mb-1">En cancha</p>
-                <p className="text-lg font-bold text-gray-800">$104k</p>
-                <p className="text-xs text-gray-400">32 reservas</p>
+                <p className="text-xs text-gray-500 mb-1">Sin pagar</p>
+                <p className="text-lg font-bold text-gray-800">
+                  {reservas.filter(r => !r.pagado).length}
+                </p>
+                <p className="text-xs text-gray-400">reservas pendientes</p>
               </div>
-            </div>
-            <div className="flex items-end gap-1 h-16">
-              {[35, 42, 28, 55].map((h, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <div
-                    className="w-full rounded-t-lg"
-                    style={{
-                      height: `${h}px`,
-                      backgroundColor: i === 3 ? '#1D9E75' : '#9FE1CB',
-                    }}
-                  />
-                  <span className="text-xs text-gray-400">S{i + 1}</span>
-                </div>
-              ))}
             </div>
           </div>
         </div>
