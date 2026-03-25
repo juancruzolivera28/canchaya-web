@@ -27,3 +27,7 @@ body {
 body {
   background-color: #0a6b52;
 }
+
+main, #__next > div {
+  background-color: #f3f4f6;
+}
