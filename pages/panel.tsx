@@ -45,149 +45,171 @@ export default function Panel() {
   }, []);
 
   if (cargando) return (
-    <div className="max-w-sm mx-auto min-h-screen flex items-center justify-center">
-      <p className="text-gray-400">Cargando panel...</p>
+    <div className="max-w-sm mx-auto min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f5f5f5' }}>
+      <div className="text-center">
+        <div className="w-12 h-12 rounded-full mx-auto mb-3 animate-pulse" style={{ backgroundColor: '#0a6b52' }} />
+        <p className="text-gray-400 text-sm">Cargando panel...</p>
+      </div>
     </div>
   );
 
   const reservasHoy = reservas.length;
   const ingresosMes = reservas.filter(r => r.pagado).length * (cancha?.precio_por_hora || 8500);
+  const pendientes = reservas.filter(r => !r.pagado).length;
 
   return (
-    <div className="max-w-sm mx-auto min-h-screen bg-gray-100">
+    <div className="max-w-sm mx-auto min-h-screen" style={{ backgroundColor: '#f5f5f5' }}>
 
-      <div style={{ backgroundColor: '#0a6b52' }} className="px-4 pt-12 pb-5">
-        <div className="flex justify-between items-start mb-4">
+      {/* Header */}
+      <div style={{ backgroundColor: '#0a6b52', paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }} className="px-4 pb-6">
+        <div className="flex justify-between items-start mb-5">
           <div>
-            <p className="text-white/70 text-xs">Buen día, dueño</p>
+            <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Panel del dueño</p>
             <h1 className="text-white text-xl font-bold">{cancha?.nombre || 'Mi Cancha'}</h1>
           </div>
           <button
             onClick={() => router.push('/')}
-            className="text-white/80 text-xs px-3 py-1.5 rounded-lg"
+            className="text-white text-xs font-bold px-3 py-2 rounded-xl"
             style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
           >
             Ver app
           </button>
         </div>
         <div className="grid grid-cols-3 gap-2">
-          <div className="rounded-xl p-3" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
-            <p className="text-white/60 text-xs mb-1">Hoy</p>
-            <p className="text-white text-xl font-bold">{reservasHoy}</p>
-            <p className="text-white/50 text-xs">reservas</p>
+          <div className="rounded-2xl p-3 text-center" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
+            <p className="text-white text-2xl font-bold">{reservasHoy}</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>reservas</p>
           </div>
-          <div className="rounded-xl p-3" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
-            <p className="text-white/60 text-xs mb-1">Este mes</p>
-            <p className="text-white text-lg font-bold">${(ingresosMes / 1000).toFixed(0)}k</p>
-            <p className="text-green-300 text-xs">total</p>
+          <div className="rounded-2xl p-3 text-center" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
+            <p className="text-white text-lg font-bold">${ingresosMes > 0 ? (ingresosMes / 1000).toFixed(0) + 'k' : '0'}</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>ingresos</p>
           </div>
-          <div className="rounded-xl p-3" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
-            <p className="text-white/60 text-xs mb-1">Pagadas</p>
-            <p className="text-white text-xl font-bold">{reservas.filter(r => r.pagado).length}</p>
-            <p className="text-white/50 text-xs">reservas</p>
+          <div className="rounded-2xl p-3 text-center" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
+            <p className="text-white text-2xl font-bold">{pendientes}</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>pendientes</p>
           </div>
         </div>
       </div>
 
       <div className="px-4 mt-4">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="font-bold text-gray-800">Agenda de hoy</h2>
-          <button className="text-xs font-bold" style={{ color: '#1D9E75' }}>Ver semana →</button>
-        </div>
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
-          {DIAS.map(dia => (
-            <button
-              key={dia.id}
-              onClick={() => setDiaActivo(dia.id)}
-              className="flex-shrink-0 flex flex-col items-center px-3 py-2 rounded-xl border text-xs"
-              style={{
-                backgroundColor: diaActivo === dia.id ? '#0a6b52' : 'white',
-                borderColor: diaActivo === dia.id ? '#0a6b52' : '#E0E0E0',
-                color: diaActivo === dia.id ? 'white' : '#1A1A1A',
-              }}
-            >
-              <span className="opacity-70">{dia.nombre}</span>
-              <span className="font-bold text-sm">{dia.numero}</span>
-            </button>
-          ))}
-        </div>
 
-        <div className="flex flex-col gap-2 mb-4">
-          {reservas.length === 0 ? (
-            <div className="bg-white rounded-xl p-6 text-center">
-              <p className="text-gray-400 text-sm">No hay reservas todavía</p>
-            </div>
-          ) : reservas.map(r => (
-            <div
-              key={r.id}
-              className="bg-white rounded-xl p-3 flex items-center gap-3"
-              style={{ borderLeft: `4px solid ${r.pagado ? '#1D9E75' : '#EF9F27'}` }}
-            >
-              <span className="text-sm font-bold text-gray-500 w-12">
-                {new Date(r.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
-              </span>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-gray-800">{r.nombre_jugador}</p>
-                <p className="text-xs text-gray-400">Fútbol 5 · 1 hora</p>
-              </div>
-              <span
-                className="text-xs font-bold px-2 py-1 rounded-lg"
+        {/* Selector de días */}
+        <div className="bg-white rounded-2xl p-4 mb-3" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.05)' }}>
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="font-bold text-gray-800 text-sm">Agenda</h2>
+            <span className="text-xs text-gray-400">Hoy · {new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}</span>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+            {DIAS.map(dia => (
+              <button
+                key={dia.id}
+                onClick={() => setDiaActivo(dia.id)}
+                className="flex-shrink-0 flex flex-col items-center px-3 py-2 rounded-xl transition-all"
                 style={{
-                  backgroundColor: r.pagado ? '#E1F5EE' : '#FAEEDA',
-                  color: r.pagado ? '#0a6b52' : '#633806',
+                  backgroundColor: diaActivo === dia.id ? '#0a6b52' : '#f5f5f5',
+                  color: diaActivo === dia.id ? 'white' : '#666',
                 }}
               >
-                {r.pagado ? 'Pagado' : 'Pendiente'}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="font-bold text-gray-800">Precios por turno</h2>
-            <button className="text-xs font-bold" style={{ color: '#1D9E75' }}>Editar →</button>
-          </div>
-          <div className="bg-white rounded-xl overflow-hidden">
-            {[
-              { turno: 'Mañana (08:00 – 12:00)', precio: 7000 },
-              { turno: 'Tarde (12:00 – 18:00)', precio: cancha?.precio_por_hora || 8500 },
-              { turno: 'Noche (18:00 – 23:00)', precio: 10000 },
-              { turno: 'Fin de semana', precio: 9500 },
-            ].map((p, i) => (
-              <div key={i} className="flex justify-between items-center px-4 py-3 border-b border-gray-100 last:border-0">
-                <span className="text-sm text-gray-700">{p.turno}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-gray-800">${p.precio.toLocaleString()}</span>
-                  <button className="text-xs bg-gray-100 px-2 py-1 rounded-lg text-gray-500">Editar</button>
-                </div>
-              </div>
+                <span className="text-xs opacity-70">{dia.nombre}</span>
+                <span className="text-sm font-bold">{dia.numero}</span>
+              </button>
             ))}
           </div>
         </div>
 
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="font-bold text-gray-800">Ingresos del mes</h2>
-          </div>
-          <div className="bg-white rounded-xl p-4">
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-xs text-gray-500 mb-1">Cobrado online</p>
-                <p className="text-lg font-bold text-gray-800">
-                  ${reservas.filter(r => r.pagado).length * (cancha?.precio_por_hora || 8500) > 0
-                    ? (reservas.filter(r => r.pagado).length * (cancha?.precio_por_hora || 8500)).toLocaleString()
-                    : '0'}
-                </p>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-xs text-gray-500 mb-1">Sin pagar</p>
-                <p className="text-lg font-bold text-gray-800">
-                  {reservas.filter(r => !r.pagado).length}
-                </p>
-                <p className="text-xs text-gray-400">reservas pendientes</p>
-              </div>
+        {/* Reservas */}
+        <div className="bg-white rounded-2xl p-4 mb-3" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.05)' }}>
+          <h2 className="font-bold text-gray-800 text-sm mb-3">Reservas</h2>
+          {reservas.length === 0 ? (
+            <div className="py-8 text-center">
+              <p className="text-3xl mb-2">📭</p>
+              <p className="text-gray-400 text-sm">No hay reservas todavía</p>
             </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {reservas.map(r => (
+                <div
+                  key={r.id}
+                  className="flex items-center gap-3 p-3 rounded-xl"
+                  style={{ backgroundColor: '#f9f9f9' }}
+                >
+                  <div
+                    className="w-1 self-stretch rounded-full"
+                    style={{ backgroundColor: r.pagado ? '#0a6b52' : '#EF9F27' }}
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-gray-800">{r.nombre_jugador}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {new Date(r.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} · Fútbol 5 · 1 hora
+                    </p>
+                  </div>
+                  <span
+                    className="text-xs font-bold px-2.5 py-1 rounded-lg"
+                    style={{
+                      backgroundColor: r.pagado ? '#E1F5EE' : '#FEF3CD',
+                      color: r.pagado ? '#0a6b52' : '#92600A',
+                    }}
+                  >
+                    {r.pagado ? 'Pagado' : 'Pendiente'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Precios */}
+        <div className="bg-white rounded-2xl p-4 mb-3" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.05)' }}>
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="font-bold text-gray-800 text-sm">Precios por turno</h2>
+            <button className="text-xs font-bold" style={{ color: '#0a6b52' }}>Editar</button>
+          </div>
+          {[
+            { turno: 'Mañana', horario: '08:00 – 12:00', precio: 7000 },
+            { turno: 'Tarde', horario: '12:00 – 18:00', precio: cancha?.precio_por_hora || 8500 },
+            { turno: 'Noche', horario: '18:00 – 23:00', precio: 10000 },
+            { turno: 'Fin de semana', horario: 'Todo el día', precio: 9500 },
+          ].map((p, i) => (
+            <div key={i} className="flex justify-between items-center py-2.5 border-b border-gray-50 last:border-0">
+              <div>
+                <p className="text-sm font-bold text-gray-700">{p.turno}</p>
+                <p className="text-xs text-gray-400">{p.horario}</p>
+              </div>
+              <p className="text-sm font-bold" style={{ color: '#0a6b52' }}>${p.precio.toLocaleString()}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Ingresos */}
+        <div className="bg-white rounded-2xl p-4 mb-8" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.05)' }}>
+          <h2 className="font-bold text-gray-800 text-sm mb-3">Ingresos del mes</h2>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="rounded-xl p-3" style={{ backgroundColor: '#f0fdf8' }}>
+              <p className="text-xs text-gray-500 mb-1">Cobrado</p>
+              <p className="text-lg font-bold" style={{ color: '#0a6b52' }}>
+                ${(reservas.filter(r => r.pagado).length * (cancha?.precio_por_hora || 8500)).toLocaleString()}
+              </p>
+            </div>
+            <div className="rounded-xl p-3" style={{ backgroundColor: '#fffbeb' }}>
+              <p className="text-xs text-gray-500 mb-1">Pendiente</p>
+              <p className="text-lg font-bold" style={{ color: '#92600A' }}>
+                ${(reservas.filter(r => !r.pagado).length * (cancha?.precio_por_hora || 8500)).toLocaleString()}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-end gap-1.5 h-16">
+            {[35, 42, 28, 55].map((h, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div
+                  className="w-full rounded-t-lg transition-all"
+                  style={{
+                    height: `${h}px`,
+                    backgroundColor: i === 3 ? '#0a6b52' : '#D1FAE5',
+                  }}
+                />
+                <span className="text-xs text-gray-400">S{i + 1}</span>
+              </div>
+            ))}
           </div>
         </div>
 
