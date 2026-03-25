@@ -45,7 +45,7 @@ useEffect(() => {
 
   return (
     <div className="max-w-sm mx-auto min-h-screen bg-gray-100">
-      <div style={{ backgroundColor: '#085041' }} className="px-4 pt-12 pb-4">
+      <div style={{ backgroundColor: '#0a6b52' }} className="px-4 pt-12 pb-4">
   <div className="flex justify-between items-start">
     <div>
       <h1 className="text-white text-2xl font-bold">CanchaYa</h1>
@@ -89,7 +89,7 @@ useEffect(() => {
 
       <div className="mx-4 mt-4 p-4 rounded-xl flex items-center justify-between" style={{ backgroundColor: '#E1F5EE' }}>
         <div>
-          <p className="font-bold text-sm" style={{ color: '#085041' }}>Reserva este fin de semana</p>
+          <p className="font-bold text-sm" style={{ color: '#0a6b52' }}>Reserva este fin de semana</p>
           <p className="text-xs mt-0.5" style={{ color: '#1D9E75' }}>20% off en canchas seleccionadas</p>
         </div>
         <button className="text-white text-sm font-bold px-4 py-2 rounded-lg" style={{ backgroundColor: '#1D9E75' }}>
@@ -106,8 +106,8 @@ useEffect(() => {
               onClick={() => setZonaActiva(zona)}
               className="flex-shrink-0 px-4 py-2 rounded-xl border text-sm font-bold"
               style={{
-                backgroundColor: zonaActiva === zona ? '#085041' : 'white',
-                borderColor: zonaActiva === zona ? '#085041' : '#E0E0E0',
+                backgroundColor: zonaActiva === zona ? '#0a6b52' : 'white',
+                borderColor: zonaActiva === zona ? '#0a6b52' : '#E0E0E0',
                 color: zonaActiva === zona ? 'white' : '#1A1A1A',
               }}
             >
@@ -141,11 +141,11 @@ useEffect(() => {
                   <span className="text-xs text-gray-500">{cancha.rating >= 4.8 ? 'Excelente' : cancha.rating >= 4.5 ? 'Muy buena' : 'Buena'}</span>
                 </div>
                 <div className="flex gap-2 mb-2">
-                  <span className="text-xs font-bold px-2 py-1 rounded" style={{ backgroundColor: '#E1F5EE', color: '#085041' }}>
+                  <span className="text-xs font-bold px-2 py-1 rounded" style={{ backgroundColor: '#E1F5EE', color: '#0a6b52' }}>
                     {cancha.tipo}
                   </span>
                   {cancha.techada && (
-                    <span className="text-xs font-bold px-2 py-1 rounded" style={{ backgroundColor: '#E1F5EE', color: '#085041' }}>
+                    <span className="text-xs font-bold px-2 py-1 rounded" style={{ backgroundColor: '#E1F5EE', color: '#0a6b52' }}>
                       Techada
                     </span>
                   )}
@@ -223,7 +223,7 @@ function DetalleCancha({ cancha, onVolver }: { cancha: any; onVolver: () => void
         <button
           onClick={onVolver}
           className="w-full py-4 rounded-xl font-bold text-white"
-          style={{ backgroundColor: '#085041' }}
+          style={{ backgroundColor: '#0a6b52' }}
         >
           Volver al inicio
         </button>
@@ -275,8 +275,8 @@ function DetalleCancha({ cancha, onVolver }: { cancha: any; onVolver: () => void
               onClick={() => setDiaActivo(dia.id)}
               className="flex-shrink-0 flex flex-col items-center px-4 py-2 rounded-xl border"
               style={{
-                backgroundColor: diaActivo === dia.id ? '#085041' : 'white',
-                borderColor: diaActivo === dia.id ? '#085041' : '#E0E0E0',
+                backgroundColor: diaActivo === dia.id ? '#0a6b52' : 'white',
+                borderColor: diaActivo === dia.id ? '#0a6b52' : '#E0E0E0',
                 color: diaActivo === dia.id ? 'white' : '#1A1A1A',
               }}
             >
@@ -300,7 +300,7 @@ function DetalleCancha({ cancha, onVolver }: { cancha: any; onVolver: () => void
                 opacity: h.ocupado ? 0.5 : 1,
               }}
             >
-              <p className="text-sm font-bold" style={{ color: horarioSel === h.id ? '#085041' : h.ocupado ? '#999' : '#1A1A1A' }}>
+              <p className="text-sm font-bold" style={{ color: horarioSel === h.id ? '#0a6b52' : h.ocupado ? '#999' : '#1A1A1A' }}>
                 {h.hora}
               </p>
               <p className="text-xs text-gray-400">
@@ -338,7 +338,7 @@ function DetalleCancha({ cancha, onVolver }: { cancha: any; onVolver: () => void
             onClick={() => hacerReserva(true)}
             disabled={guardando}
             className="flex-1 py-3.5 rounded-xl font-bold text-white text-sm"
-            style={{ backgroundColor: '#085041', flexGrow: 2 }}
+            style={{ backgroundColor: '#0a6b52', flexGrow: 2 }}
           >
             {guardando ? 'Guardando...' : 'Pagar ahora'}
           </button>

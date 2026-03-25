@@ -56,7 +56,7 @@ export default function Panel() {
   return (
     <div className="max-w-sm mx-auto min-h-screen bg-gray-100">
 
-      <div style={{ backgroundColor: '#085041' }} className="px-4 pt-12 pb-5">
+      <div style={{ backgroundColor: '#0a6b52' }} className="px-4 pt-12 pb-5">
         <div className="flex justify-between items-start mb-4">
           <div>
             <p className="text-white/70 text-xs">Buen día, dueño</p>
@@ -101,8 +101,8 @@ export default function Panel() {
               onClick={() => setDiaActivo(dia.id)}
               className="flex-shrink-0 flex flex-col items-center px-3 py-2 rounded-xl border text-xs"
               style={{
-                backgroundColor: diaActivo === dia.id ? '#085041' : 'white',
-                borderColor: diaActivo === dia.id ? '#085041' : '#E0E0E0',
+                backgroundColor: diaActivo === dia.id ? '#0a6b52' : 'white',
+                borderColor: diaActivo === dia.id ? '#0a6b52' : '#E0E0E0',
                 color: diaActivo === dia.id ? 'white' : '#1A1A1A',
               }}
             >
@@ -134,7 +134,7 @@ export default function Panel() {
                 className="text-xs font-bold px-2 py-1 rounded-lg"
                 style={{
                   backgroundColor: r.pagado ? '#E1F5EE' : '#FAEEDA',
-                  color: r.pagado ? '#085041' : '#633806',
+                  color: r.pagado ? '#0a6b52' : '#633806',
                 }}
               >
                 {r.pagado ? 'Pagado' : 'Pendiente'}
