@@ -244,24 +244,73 @@ function DetalleCancha({ cancha, onVolver }: { cancha: any; onVolver: () => void
     setGuardando(false);
   }
 
-  if (reservaExitosa) {
-    return (
-      <div className="max-w-sm mx-auto min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
-        <div className="w-24 h-24 rounded-full flex items-center justify-center text-5xl mb-6" style={{ backgroundColor: '#E1F5EE' }}>
+if (reservaExitosa) {
+  return (
+    <div className="max-w-sm mx-auto min-h-screen flex flex-col" style={{ backgroundColor: '#f5f5f5' }}>
+      <div style={{ backgroundColor: '#0a6b52', paddingTop: 'calc(env(safe-area-inset-top) + 60px)' }} className="px-6 pb-16 flex flex-col items-center text-center">
+        <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
           ✅
         </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">¡Reserva confirmada!</h1>
-        <p className="text-gray-400 mb-8 text-sm">Tu turno en <span className="font-bold text-gray-600">{cancha.nombre}</span> quedó reservado.</p>
+        <h1 className="text-2xl font-bold text-white mb-2">¡Reserva confirmada!</h1>
+        <p className="text-sm" style={{ color: '#9FE1CB' }}>Tu turno quedó reservado exitosamente</p>
+      </div>
+
+      <div className="px-4 -mt-6">
+        <div className="bg-white rounded-2xl p-5 mb-3" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Detalle de la reserva</p>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl" style={{ backgroundColor: '#E1F5EE' }}>
+              ⚽
+            </div>
+            <div>
+              <p className="font-bold text-gray-800">{cancha.nombre}</p>
+              <p className="text-xs text-gray-400">📍 {cancha.zona} · Posadas</p>
+            </div>
+          </div>
+          <div className="h-px bg-gray-100 mb-3" />
+          <div className="flex justify-between mb-2">
+            <span className="text-sm text-gray-400">Tipo</span>
+            <span className="text-sm font-bold text-gray-700">{cancha.tipo}</span>
+          </div>
+          <div className="flex justify-between mb-2">
+            <span className="text-sm text-gray-400">Duración</span>
+            <span className="text-sm font-bold text-gray-700">1 hora</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-gray-400">Total</span>
+            <span className="text-sm font-bold" style={{ color: '#0a6b52' }}>${cancha.precio_por_hora.toLocaleString()}</span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-4 mb-4 flex items-center gap-3" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.05)' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#FEF3CD' }}>
+            <span className="text-lg">📞</span>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-700">¿Necesitás ayuda?</p>
+            <p className="text-xs text-gray-400">Contactá al complejo directamente</p>
+          </div>
+        </div>
+
         <button
           onClick={onVolver}
-          className="w-full py-4 rounded-2xl font-bold text-white text-sm"
+          className="w-full py-4 rounded-2xl font-bold text-white text-sm mb-3"
           style={{ backgroundColor: '#0a6b52' }}
         >
           Volver al inicio
         </button>
+        <button
+          onClick={() => window.location.href = '/reservas'}
+          className="w-full py-4 rounded-2xl font-bold text-sm"
+          style={{ backgroundColor: 'white', color: '#0a6b52', border: '2px solid #0a6b52' }}
+        >
+          Ver mis reservas
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   return (
     <div className="max-w-sm mx-auto min-h-screen" style={{ backgroundColor: '#f5f5f5' }}>
@@ -385,6 +434,7 @@ function DetalleCancha({ cancha, onVolver }: { cancha: any; onVolver: () => void
             {guardando ? 'Guardando...' : 'Pagar ahora →'}
           </button>
         </div>
+
       </div>
     </div>
   );
