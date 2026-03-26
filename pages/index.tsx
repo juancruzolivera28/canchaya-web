@@ -56,7 +56,16 @@ export default function Home() {
   }
 
   const zonas = ['Todas', ...Array.from(new Set(canchas.map(c => c.zona)))];
-  const canchasFiltradas = zonaActiva === 'Todas' ? canchas : canchas.filter(c => c.zona === zonaActiva);
+  const [busqueda, setBusqueda] = useState('');
+
+const canchasFiltradas = canchas.filter(c => {
+  const matchZona = zonaActiva === 'Todas' || c.zona === zonaActiva;
+  const matchBusqueda = busqueda === '' || 
+    c.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+    c.zona.toLowerCase().includes(busqueda.toLowerCase()) ||
+    c.direccion?.toLowerCase().includes(busqueda.toLowerCase());
+  return matchZona && matchBusqueda;
+});
 
   if (canchaSeleccionada) {
     return <DetalleCancha cancha={canchaSeleccionada} onVolver={() => setCanchaSeleccionada(null)} />;
@@ -106,7 +115,9 @@ export default function Home() {
           <input
             className="w-full pl-9 pr-4 py-3 rounded-2xl text-sm text-white placeholder-white/50 outline-none"
             style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
-            placeholder="Buscar cancha, barrio, zona..."
+            value={busqueda}
+onChange={e => setBusqueda(e.target.value)}
+placeholder="Buscar cancha, barrio, zona..."
           />
         </div>
       </div>
