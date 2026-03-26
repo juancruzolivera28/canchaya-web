@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'next/router';
+import NavBar from '../components/NavBar';
 
 const DIAS = [
   { id: '1', nombre: 'Sáb', numero: '22' },
@@ -72,7 +73,7 @@ const canchasFiltradas = canchas.filter(c => {
   }
 
   return (
-    <div className="max-w-sm mx-auto min-h-screen" style={{ backgroundColor: '#f5f5f5' }}>
+    <div className="max-w-sm mx-auto min-h-screen pb-24" style={{ backgroundColor: '#f5f5f5' }}>
 
       {/* Header */}
       <div style={{ backgroundColor: '#0a6b52', paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }} className="px-4 pb-5">
@@ -211,6 +212,8 @@ placeholder="Buscar cancha, barrio, zona..."
           </div>
         ))}
       </div>
+      
+      <NavBar activa="home" /> 
 
     </div>
   );
@@ -382,7 +385,6 @@ function DetalleCancha({ cancha, onVolver }: { cancha: any; onVolver: () => void
             {guardando ? 'Guardando...' : 'Pagar ahora →'}
           </button>
         </div>
-
       </div>
     </div>
   );
