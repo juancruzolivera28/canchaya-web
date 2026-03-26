@@ -18,31 +18,43 @@ export default function Panel() {
   const [diaActivo, setDiaActivo] = useState('2');
   const [cargando, setCargando] = useState(true);
   const [reservas, setReservas] = useState<any[]>([]);
+  const [mostrarAgregar, setMostrarAgregar] = useState(false);
+  const [nuevaReserva, setNuevaReserva] = useState({ nombre: '', hora: '08:00', pagado: false });
+  const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) { router.push('/login'); return; }
       setUsuario(session.user);
-
       const { data: canchaData } = await supabase
-        .from('canchas')
-        .select('*')
-        .eq('dueno_id', session.user.id)
-        .single();
+        .from('canchas').select('*').eq('dueno_id', session.user.id).single();
       setCancha(canchaData);
-
       if (canchaData) {
         const { data: reservasData } = await supabase
-          .from('reservas')
-          .select('*')
-          .eq('cancha_id', canchaData.id)
+          .from('reservas').select('*').eq('cancha_id', canchaData.id)
           .order('created_at', { ascending: false });
         setReservas(reservasData || []);
       }
-
       setCargando(false);
     });
   }, []);
+
+  async function agregarReservaManual() {
+    if (!nuevaReserva.nombre || !cancha) return;
+    setGuardando(true);
+    const { data, error } = await supabase.from('reservas').insert({
+      cancha_id: cancha.id,
+      nombre_jugador: nuevaReserva.nombre,
+      pagado: nuevaReserva.pagado,
+      horario_id: null,
+    }).select().single();
+    if (!error && data) {
+      setReservas([data, ...reservas]);
+      setMostrarAgregar(false);
+      setNuevaReserva({ nombre: '', hora: '08:00', pagado: false });
+    }
+    setGuardando(false);
+  }
 
   if (cargando) return (
     <div className="max-w-sm mx-auto min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f5f5f5' }}>
@@ -56,16 +68,17 @@ export default function Panel() {
   const reservasHoy = reservas.length;
   const ingresosMes = reservas.filter(r => r.pagado).length * (cancha?.precio_por_hora || 8500);
   const pendientes = reservas.filter(r => !r.pagado).length;
+  const nombre = usuario?.user_metadata?.nombre || usuario?.email?.split('@')[0] || 'Dueño';
 
   return (
     <div className="max-w-sm mx-auto min-h-screen" style={{ backgroundColor: '#f5f5f5' }}>
 
-      {/* Header */}
       <div style={{ backgroundColor: '#0a6b52', paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }} className="px-4 pb-6">
         <div className="flex justify-between items-start mb-5">
           <div>
-            <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>Panel del dueño</p>
+            <p className="text-xs mb-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Buen día, {nombre} 👋</p>
             <h1 className="text-white text-xl font-bold">{cancha?.nombre || 'Mi Cancha'}</h1>
+            <p className="text-xs mt-0.5" style={{ color: '#9FE1CB' }}>📍 {cancha?.direccion}</p>
           </div>
           <button
             onClick={() => router.push('/')}
@@ -91,15 +104,21 @@ export default function Panel() {
         </div>
       </div>
 
-      <div className="px-4 mt-4">
+      <div className="px-4 mt-4 pb-10">
 
-        {/* Selector de días */}
+        {/* Agenda */}
         <div className="bg-white rounded-2xl p-4 mb-3" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.05)' }}>
           <div className="flex justify-between items-center mb-3">
             <h2 className="font-bold text-gray-800 text-sm">Agenda</h2>
-            <span className="text-xs text-gray-400">Hoy · {new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}</span>
+            <button
+              onClick={() => setMostrarAgregar(true)}
+              className="text-xs font-bold px-3 py-1.5 rounded-xl text-white"
+              style={{ backgroundColor: '#0a6b52' }}
+            >
+              + Agregar
+            </button>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex gap-2 overflow-x-auto pb-1 mb-3" style={{ scrollbarWidth: 'none' }}>
             {DIAS.map(dia => (
               <button
                 key={dia.id}
@@ -115,28 +134,17 @@ export default function Panel() {
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Reservas */}
-        <div className="bg-white rounded-2xl p-4 mb-3" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.05)' }}>
-          <h2 className="font-bold text-gray-800 text-sm mb-3">Reservas</h2>
           {reservas.length === 0 ? (
-            <div className="py-8 text-center">
+            <div className="py-6 text-center">
               <p className="text-3xl mb-2">📭</p>
               <p className="text-gray-400 text-sm">No hay reservas todavía</p>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
               {reservas.map(r => (
-                <div
-                  key={r.id}
-                  className="flex items-center gap-3 p-3 rounded-xl"
-                  style={{ backgroundColor: '#f9f9f9' }}
-                >
-                  <div
-                    className="w-1 self-stretch rounded-full"
-                    style={{ backgroundColor: r.pagado ? '#0a6b52' : '#EF9F27' }}
-                  />
+                <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#f9f9f9' }}>
+                  <div className="w-1 self-stretch rounded-full" style={{ backgroundColor: r.pagado ? '#0a6b52' : '#EF9F27' }} />
                   <div className="flex-1">
                     <p className="text-sm font-bold text-gray-800">{r.nombre_jugador}</p>
                     <p className="text-xs text-gray-400 mt-0.5">
@@ -181,7 +189,7 @@ export default function Panel() {
         </div>
 
         {/* Ingresos */}
-        <div className="bg-white rounded-2xl p-4 mb-8" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.05)' }}>
+        <div className="bg-white rounded-2xl p-4 mb-3" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.05)' }}>
           <h2 className="font-bold text-gray-800 text-sm mb-3">Ingresos del mes</h2>
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="rounded-xl p-3" style={{ backgroundColor: '#f0fdf8' }}>
@@ -200,20 +208,79 @@ export default function Panel() {
           <div className="flex items-end gap-1.5 h-16">
             {[35, 42, 28, 55].map((h, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div
-                  className="w-full rounded-t-lg transition-all"
-                  style={{
-                    height: `${h}px`,
-                    backgroundColor: i === 3 ? '#0a6b52' : '#D1FAE5',
-                  }}
-                />
+                <div className="w-full rounded-t-lg" style={{ height: `${h}px`, backgroundColor: i === 3 ? '#0a6b52' : '#D1FAE5' }} />
                 <span className="text-xs text-gray-400">S{i + 1}</span>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Info de la cancha */}
+        <div className="bg-white rounded-2xl p-4 mb-8" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.05)' }}>
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="font-bold text-gray-800 text-sm">Mi cancha</h2>
+            <button className="text-xs font-bold" style={{ color: '#0a6b52' }}>Editar info</button>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {[
+              cancha?.tipo || 'Fútbol 5',
+              cancha?.techada ? '🏠 Techada' : '☀️ Al aire libre',
+              cancha?.iluminada ? '💡 Iluminada' : null,
+            ].filter(Boolean).map(t => (
+              <span key={t} className="text-xs text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg">{t}</span>
+            ))}
+          </div>
+        </div>
+
       </div>
+
+      {/* Modal agregar reserva */}
+      {mostrarAgregar && (
+        <div className="fixed inset-0 flex items-end justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 50 }}>
+          <div className="bg-white rounded-t-3xl p-6 w-full max-w-sm" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
+            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+            <h2 className="font-bold text-gray-800 text-lg mb-4">Agregar reserva manual</h2>
+            <div className="mb-4">
+              <label className="text-xs font-bold text-gray-500 mb-1.5 block uppercase tracking-wide">Nombre del jugador</label>
+              <input
+                value={nuevaReserva.nombre}
+                onChange={e => setNuevaReserva({ ...nuevaReserva, nombre: e.target.value })}
+                placeholder="Ej: Martín García"
+                className="w-full px-4 py-3 rounded-xl text-sm text-gray-900 outline-none"
+                style={{ border: '1.5px solid #e5e5e5' }}
+              />
+            </div>
+            <div className="flex items-center gap-3 mb-6 p-3 rounded-xl" style={{ backgroundColor: '#f5f5f5' }}>
+              <input
+                type="checkbox"
+                id="pagado"
+                checked={nuevaReserva.pagado}
+                onChange={e => setNuevaReserva({ ...nuevaReserva, pagado: e.target.checked })}
+                className="w-4 h-4"
+              />
+              <label htmlFor="pagado" className="text-sm font-bold text-gray-700">Ya pagó en efectivo</label>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setMostrarAgregar(false)}
+                className="flex-1 py-3.5 rounded-xl font-bold text-sm text-gray-600"
+                style={{ backgroundColor: '#f5f5f5' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={agregarReservaManual}
+                disabled={guardando || !nuevaReserva.nombre}
+                className="flex-2 py-3.5 rounded-xl font-bold text-white text-sm"
+                style={{ backgroundColor: '#0a6b52', flex: 2 }}
+              >
+                {guardando ? 'Guardando...' : 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
