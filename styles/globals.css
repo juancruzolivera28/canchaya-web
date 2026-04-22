@@ -27,3 +27,15 @@ body {
 body {
   background-color: #0a6b52;
 }
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+button:active {
+  opacity: 0.75;
+  transform: scale(0.97);
+}
