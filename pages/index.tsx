@@ -178,8 +178,12 @@ placeholder="Buscar cancha, barrio, zona..."
             className="bg-white rounded-2xl mb-3 overflow-hidden cursor-pointer active:scale-98 transition-transform"
             style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}
           >
-            <div className="h-36 flex items-center justify-center text-6xl relative" style={{ backgroundColor: '#D9F0E6' }}>
-              ⚽
+            <div className="h-36 relative overflow-hidden" style={{ backgroundColor: '#D9F0E6' }}>
+  {cancha.foto_url ? (
+    <img src={cancha.foto_url} alt={cancha.nombre} className="w-full h-full object-cover" />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center text-6xl">⚽</div>
+  )}
               <div className="absolute top-3 right-3 px-2 py-1 rounded-lg text-xs font-bold text-white" style={{ backgroundColor: '#0a6b52' }}>
                 ${cancha.precio_por_hora.toLocaleString()}/h
               </div>
@@ -316,8 +320,12 @@ if (reservaExitosa) {
     <div className="max-w-sm mx-auto min-h-screen" style={{ backgroundColor: '#f5f5f5' }}>
 
       {/* Hero */}
-      <div className="relative h-52 flex items-center justify-center text-8xl" style={{ backgroundColor: '#D9F0E6' }}>
-        ⚽
+      <div className="relative h-52 overflow-hidden" style={{ backgroundColor: '#D9F0E6' }}>
+  {cancha.foto_url ? (
+    <img src={cancha.foto_url} alt={cancha.nombre} className="w-full h-full object-cover" />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center text-8xl">⚽</div>
+  )}
         <button
           onClick={onVolver}
           className="absolute top-4 left-4 w-10 h-10 bg-white rounded-full flex items-center justify-center text-lg font-bold shadow-sm"
